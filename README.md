@@ -1,5 +1,5 @@
 &lt;p align="center"&gt;
-  &lt;img src="/smarthire.png" alt="SmartHire Banner" width="100%"&gt;
+  &lt;img src="./smarthire.png" alt="SmartHire Banner" width="100%"&gt;
 &lt;/p&gt;
 
 &lt;h1 align="center"&gt;SmartHire – Hack The Box Writeup&lt;/h1&gt;
@@ -50,8 +50,7 @@
 ### Escaneo de Puertos
 
 ```bash
-nmap -sS -sC -sV -T4 -Pn 10.129.245.215****
-
+nmap -sS -sC -sV -T4 -Pn 10.129.245.215
 
 Resultados relevantes:
 Table
@@ -259,4 +258,3 @@ Python	Desarrollo de scripts de explotación
     Plataforma: Hack The Box
     Máquina: SmartHire
 
-  
