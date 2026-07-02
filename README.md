@@ -259,16 +259,4 @@ Python	Desarrollo de scripts de explotación
     Plataforma: Hack The Box
     Máquina: SmartHire
 
-    ⚠️ Disclaimer: Este writeup tiene fines exclusivamente educativos. La información aquí presentada debe utilizarse únicamente en entornos autorizados, como plataformas de CTF o laboratorios de pentesting. El autor no se hace responsable del uso indebido de esta información.
-
-plain
-
-
----
-
-### Cambios realizados:
-
-1. **Banner centrado** en la parte superior con `<p align="center">` y `width="100%"`
-2. **Título centrado** debajo del banner
-3. **Badges de estado** (Hack The Box, Medium, Linux, Completado) alineados horizontalmente
-4. Todo el contenido técnico permanece igual, con credenciales y hashes redactados
+  
